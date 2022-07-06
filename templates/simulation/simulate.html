@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.8.4/semantic.min.css" rel="stylesheet">
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.8.4/semantic.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/Draggable.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
+    </head>
+
+<body>
+        <div class="ui grid container" style="height: 100vh; margin: 0; width: 100vw;">
+          <div class="three wide column" style="background:rgb(255, 255, 255); box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px; padding: 25px">
+              <h2 class="ui header" style="padding-top: 5%">Global Variables</h2>
+
+              <div class="ui info hidden message">
+                <i class="close icon"></i>
+                <div class="header">
+                  Re-run Simulation
+                </div>
+                <p>Inputs have changed, a re-run is required</p>
+              </div>
+
+              <div class="ui tiny form">
+                        <div class="field">
+                          <label>Valuation Period</label>
+                          <input class="var-input" value=5 placeholder="Valuation Period" name="valuation-period" type="text" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');">
+                        </div>
+                         <div class="field">
+                          <label>Deal Volume</label>
+                          <input class="var-input" value=5 placeholder="Deal Volume" name="deal-volume" type="text" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');">
+                        </div>
+                        <div class="field">
+                          <label>Investment Size per Deal</label>
+                          <input class="var-input" value= 3500000 placeholder="Investment Size" name="invest-size" type="text" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');">
+                        </div>
+                        <div class="field">
+                          <label>Variable Expense per Deal</label>
+                          <input class="var-input" value=250000 placeholder="Variable Expense" name="variable-expense" type="text" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');">
+                        </div>
+                        <div class="field">
+                          <label>Operational Expenses per Annum</label>
+                          <input class="var-input" value=1300000 placeholder="Opex" name="op-expense" type="text" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');">
+                        </div>
+                        <div class="field">
+                          <label>Discount Rate</label>
+                          <input class="var-input" value=22 placeholder="Discount Rate" name="discount-rate" type="text" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');">
+                        </div>
+
+                      <div class="ui submit fluid secondary disabled button"><i class="play circle outline icon"></i>Run Simulation</div>
+              </div>
+          </div>
+<!--            <div class="ui fitted vertical divider"></div>-->
+          <div class="thirteen wide column" >
+              <div class="ui segment" style="background: transparent !important; border: none; box-shadow: none; padding:0;">
+                        <!-- ISR Slider -->
+                  <div class="ui inverted dimmer" id="page-loader">
+                    <div class="ui text loader">Running...</div>
+                  </div>
+                        <main>
+                            <div class="field_slider">
+                                <label class="text-label" style="padding-bottom: 5%;">Incubation Success Ratio</label>
+                                <div class="inputslider" data-value="60" data-unit="%" data-values="60,65,70,75,80,85,90,95,100">
+                                    <input type="text" name="input" autocomplete="off" readonly>
+                                    <div class="values"></div>
+                                    <div class="area">
+                                        <div class="track"></div>
+                                        <div class="fill"></div>
+                                        <div class="knob"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+
+
+              <div id="result-container">
+          <!-- KPI Cards -->
+                <div class="ui">
+                  <div class="ui_box">
+                    <div class="ui_box__inner">
+                      <h2>
+                        Net Valuation
+                      </h2>
+                      <p>Terminal Value <i>less</i> Capex</p>
+                      <div class="stat">
+                        <span id="net-valuation">R250m</span>
+                      </div>
+                      <div class="progress">
+                        <div class="progress_bar"></div>
+                      </div>
+                      <p>= Gross Terminal Value <br> - Capital Invested <br> - Operational Expenses <br> - Deal Expenses</p>
+                    </div>
+                  </div>
+                  <div class="ui_box">
+                    <div class="ui_box__inner">
+                      <h2>
+                        CAGR
+                      </h2>
+                      <p>Compound Annual Growth Rate</p>
+                      <div class="stat">
+                        <span id="cagr">20%</span>
+                      </div>
+                      <div class="progress">
+                        <div class="progress_bar--two"></div>
+                      </div>
+                      <p>Low: 5 - 15% <br> Average: 15 - 25% <br> Good: 25 - 35% <br> High: 35 - 50% </p>
+                    </div>
+                  </div>
+                  <div class="ui_box">
+                    <div class="ui_box__inner">
+                      <h2>
+                        Equity Return Multiple
+                      </h2>
+                      <p>Gross Terminal Value / Capital Invested</p>
+                      <div class="stat">
+                        <span id="coc">2X</span>
+                      </div>
+                      <div class="progress">
+                        <div class="progress_bar--three"></div>
+                      </div>
+                        <p>Low: 0 - 2X <br> Average: 2 - 5X <br> Good: 5 - 10X <br> High: 10 - 20X </p>
+                    </div>
+                  </div>
+                </div>
+
+
+
+<!--              <h1>Test</h1>-->
+
+                      <div class="ui grid" style="padding-top: 7px;">
+                          <div class="ten wide column">
+                              <div class="ui raised segment"style="height: 500px">
+                                        <div class="ui stackable grid">
+                                          <div class="five wide column" style="padding: 0 !important;">
+                                              <div class="ui">
+                                                  <div class="ui_box--2">
+                                                        <div class="ui_box__inner--3">
+                                                          <h2>
+                                                              Capex
+                                                          </h2>
+                                                          <p id="capex-sub">100% of Total Valuation</p>
+                                                          <div class="stat">
+                                                            <span id = "capex">(R357m)</span>
+                                                          </div>
+<!--                                                          <div class="progress">-->
+<!--                                                            <div class="progress_bar"></div>-->
+<!--                                                          </div>-->
+                                                        </div>
+                                                  </div>
+                                                  <div class="ui_box--2">
+                                                        <div class="ui_box__inner">
+                                                          <h2>
+                                                            Management Fee Valuation
+                                                          </h2>
+                                                          <p id="man-fee-val-sub">30% of Total Valuation</p>
+                                                          <div class="stat">
+                                                            <span id="man-fee-val">R100m</span>
+                                                          </div>
+<!--                                                          <div class="progress">-->
+<!--                                                            <div class="progress_bar"></div>-->
+<!--                                                          </div>-->
+                                                        </div>
+                                                  </div>
+                                                  <div class="ui_box--2">
+                                                        <div class="ui_box__inner">
+                                                          <h2>
+                                                            Equity Valuation
+                                                          </h2>
+                                                          <p id="equity-val-sub">70% of Total Valuation</p>
+                                                          <div class="stat">
+                                                            <span id="equity-val">R150m</span>
+                                                          </div>
+<!--                                                          <div class="progress">-->
+<!--                                                            <div class="progress_bar"></div>-->
+<!--                                                          </div>-->
+                                                        </div>
+                                                  </div>
+
+                                              </div>
+                                          </div>
+                                          <div class="eleven wide column" id="main" style="height:500px; padding: 0 !important;"></div>
+                                        </div>
+                              </div>
+                          </div>
+                          <div class="six wide column">
+                              <div class="ui raised segment" id="main3" style="height:500px">
+                                  <div id="main2" style="height: 450px"></div>
+                              </div>
+                          </div>
+
+
+                          </div>
+
+                          <div class="ui">
+                                  <div class="ui_box--3">
+                                    <div class="ui_box__inner--3">
+                                      <h2>
+                                        Average Management Fee
+                                      </h2>
+                                      <p>Per Cell per Annum</p>
+                                      <div class="stat">
+                                        <span id="management-fee-cell">R250m</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="ui_box--3">
+                                    <div class="ui_box__inner--3">
+                                      <h2>
+                                        Average GWP
+                                      </h2>
+                                      <p>Per Cell per Annum</p>
+                                      <div class="stat">
+                                        <span id="annual-gwp">R250m</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="ui_box--3">
+                                    <div class="ui_box__inner--3">
+                                      <h2>
+                                        Successful Investments
+                                      </h2>
+                                      <p id="success-sub-text"></p>
+                                      <div class="stat">
+                                        <span id="successes">R250m</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="ui_box--3">
+                                    <div class="ui_box__inner--3">
+                                      <h2>
+                                        Failed Investments
+                                      </h2>
+                                      <p id="failure-sub-text"></p>
+                                      <div class="stat">
+                                        <span id="failures">R250m</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                          </div>
+                 </div>
+          </div>
+          </div>
+        </div>
+
+      <script>
+      $(document)
+        .ready(function() {
+         
+         // Close info message upon close button click
+          $('.message .close')
+            .on('click', function() {
+              $(this)
+                .closest('.message')
+                .transition('fade')
+              ;
+            })
+          ;
+            const inputStore = {'isr': 0.6};
+
+
+            (function formatInputValues() {
+                $("input.var-input").each(function(e) {
+                    let input_value = parseInt(this.value);
+                    if (this.getAttribute('name') == 'discount-rate'){
+                        this.value = input_value + '%';
+                        inputStore[`${this.getAttribute('name')}`] = input_value/100;
+                    } else {
+                        $(this).data('value', this.value);
+                        inputStore[`${this.getAttribute('name')}`] = this.value;
+                        this.value = input_value.toLocaleString();
+                    }
+                })
+            })();
+
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+            const token = getCookie('csrftoken');
+
+            function getValuationData(formData) {
+                $.ajax({
+                    url: 'valuation/',
+                    type: 'post',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': token
+                      },
+                    data: JSON.stringify(formData),
+                    dataType: 'json',
+                    beforeSend: function(e) {
+                        $("#page-loader").addClass("active");
+                        $("#result-container").css('display', 'none');
+                    },
+                    success: function(data){
+                        $("#page-loader").removeClass("active");
+                        $("#result-container").css('display', '');
+                        buildChart(data['fee_valuation'], data['equity_valuation']);
+                        $("#net-valuation").html(`R${numeral(data['net_valuation']).format('0.0a')}`);
+                        $("#cagr").html(`${Math.round(data['cagr']*100)}%`);
+                        $("#coc").html(`${data['coc']}X`);
+
+                        const man_fee_value = data['fee_valuation'];
+                        const equity_value = data['equity_valuation'];
+                        const gross_total_value = man_fee_value + equity_value;
+                        const man_pee_perc = man_fee_value/gross_total_value*100;
+                        const equity_perc = equity_value/gross_total_value*100;
+                        const capex = data['total_invested'] + data['opex'] + data['varex'];
+                        $("#man-fee-val").html(`R${numeral(man_fee_value).format('0.0a')}`);
+                        $("#man-fee-val-sub").html(`${Math.round(man_pee_perc)}% of Gross Valuation`);
+                        $("#equity-val").html(`R${numeral(equity_value).format('0.0a')}`);
+                        $("#equity-val-sub").html(`${Math.round(equity_perc)}% of Gross Valuation`);
+
+                        $("#capex").html(`(R${numeral(capex).format('0.0a')})`);
+                        $("#capex-sub").html("Capital Deployed");
+
+                        buildCapexChart({'invested': data['total_invested'], 'opex': data['opex'], 'varex': data['varex']});
+                        // Update KPI progress widths
+                        const root = document.documentElement;
+                        root.style.setProperty('--bar1-width', Math.min(Math.round(data['net_valuation']/1000000000*100), 100) + "%");
+                        root.style.setProperty('--bar2-width', Math.min(Math.round(data['cagr']*100), 100) + "%");
+                        root.style.setProperty('--bar3-width', Math.min(Math.round(data['coc']/20*100), 100) + "%");
+
+                        // Bottom KPI Cards
+                        const total_investment_count = parseInt(inputStore['deal-volume']) * parseInt(inputStore['valuation-period']);
+                        $("#success-sub-text").html(`Out of ${total_investment_count} Investments`);
+                        $("#failure-sub-text").html(`Out of ${total_investment_count} Investments`);
+                        const ebidta = 7;
+                        const successes = total_investment_count * inputStore['isr'];
+                        const failures = total_investment_count - successes;
+                        const avg_man_fee = data['fee_valuation']/ebidta/successes;
+                        const gr_fee_perc = 0.05;
+                        const avg_gwp = avg_man_fee/gr_fee_perc;
+
+                        $("#management-fee-cell").html(`R${numeral(avg_man_fee).format('0.0a')}`);
+                        $("#annual-gwp").html(`R${numeral(avg_gwp).format('0.0a')}`);
+                        $("#successes").html(successes);
+                        $("#failures").html(failures);
+                    }
+                })
+            }
+
+            getValuationData(inputStore);
+
+
+
+            $(".ui.button").on('click', function(e){
+                const input_key_count = Object.keys(inputStore).length;
+                $(".ui.button").addClass("disabled");
+                if (!$(".ui.message").hasClass("hidden")) {
+                  $(".ui.message").addClass("hidden");
+                }
+                
+                getValuationData(inputStore);
+            })
+
+
+                $("input.var-input").on('change', (e) => {
+                    let input_value = parseInt(e.target.value);
+                    if (inputStore[`${e.target.getAttribute('name')}`] != e.target.value){
+                      $(".ui.button").removeClass("disabled");
+                      $(".ui.message").addClass("hidden");
+                      if ($(".ui.message").hasClass("hidden")) {
+                         $(".ui.message").removeClass("hidden");
+                      }
+                    };
+
+                    if (e.target.getAttribute('name') == 'discount-rate'){
+                        e.target.value = input_value + '%';
+                        inputStore[`${e.target.getAttribute('name')}`] = input_value/100;
+                    } else {
+                        $(this).data('value', e.target.value);
+                        inputStore[`${e.target.getAttribute('name')}`] = e.target.value;
+                        e.target.value = input_value.toLocaleString();
+                    }
+                })
+
+
+     // InputSlider
+                    Element.prototype.addClass = function(className)
+                    {
+                        if(!this.classList.contains(className)){
+                            this.classList.add(className);
+                        }
+                    };
+
+                    Element.prototype.removeClass = function(className)
+                    {
+                        if(this.classList.contains(className)){
+                            this.classList.remove(className);
+                        }
+                    };
+
+                    Array.prototype.first = function()
+                    {
+                        return this[0];
+                    }
+
+                    Array.prototype.last = function()
+                    {
+                        return this[this.length - 1];
+                    }
+
+                    document.querySelectorAll('.inputslider').forEach(
+                    (inputslider) => {
+                        let values = inputslider.dataset.values.split(','),
+                            value = parseFloat(inputslider.dataset.value),
+                            unit = '',
+                            min = parseFloat(values.first()),
+                            max = parseFloat(values.last()),
+                            input = inputslider.querySelector('input'),
+                            area = inputslider.querySelector('.area'),
+                            knob = inputslider.querySelector('.knob'),
+                            fill = inputslider.querySelector('.fill');
+                        if(inputslider.dataset.unit){
+                            unit = inputslider.dataset.unit;
+                        }
+
+                        values.forEach(
+                            (value, i) => {
+                                values[i] = value = parseFloat(value);
+
+                                let span = document.createElement('span');
+                                span.innerText = value + unit;
+                                span.setAttribute('data-value', value);
+
+                                if(i == 0){
+                                    span.addClass('selected');
+                                    input.value = value;
+                                }
+
+                                span.style.left = gsap.utils.mapRange(min, max, 0, 100, value) + '%';
+
+                                inputslider.querySelector('.values').appendChild(span);
+                            }
+                        );
+
+                        Draggable.create(knob, {
+                                type: 'x',
+                                edgeResistance: 1,
+                                bounds: area,
+                                throwProps: false,
+                                onDrag: function()
+                                {
+                                    handleInputslider(this, false);
+                                },
+                                onDragEnd: function()
+                                {
+                                    handleInputslider(this, true);
+                                    $(".ui.button").removeClass("disabled");
+                                    if ($(".ui.message").hasClass("hidden")) {
+                                         $(".ui.message").removeClass("hidden");
+                                    }
+                                }
+                            }
+                        );
+                    }
+                );
+
+                function handleInputslider(instance, snap)
+                {
+                    let inputslider = instance.target.closest('.inputslider'),
+                        fill = inputslider.querySelector('.fill'),
+                        values = inputslider.dataset.values.split(','),
+                        min = parseFloat(values.first()),
+                        max = parseFloat(values.last()),
+                        xPercent = gsap.utils.mapRange(0, instance.maxX, 0, 100, instance.x),
+                        relativeValue = gsap.utils.mapRange(0, instance.maxX, min, max, instance.x),
+                        finalValue = gsap.utils.snap(values, relativeValue),
+                        snapX = gsap.utils.mapRange(min, max, 0, instance.maxX, finalValue),
+                        fillWidth = gsap.utils.mapRange(0, instance.maxX, 0, 100, snapX);
+                        $('.inputslider').data('value', finalValue);
+                        inputStore['isr'] = finalValue/100;
+                        
+                        // $('.ui.button').addClass('disabled');
+
+                    if(snap){
+                        gsap.to(instance.target, {duration: .2, x: snapX});
+                        gsap.to(fill, {duration: .2, width: fillWidth + '%'});
+                    }else{
+                        values.forEach(
+                            (value, i) => {
+                                values[i] = parseFloat(value);
+                            }
+                        );
+
+                        fill.style.width = xPercent + '%';
+
+                        inputslider.querySelectorAll('.values span').forEach(
+                            (span) => {
+                                if(parseFloat(span.dataset.value) == finalValue){
+                                    span.addClass('selected');
+                                }else{
+                                    span.removeClass('selected');
+                                }
+                            }
+                        );
+
+                        inputslider.querySelector('input').value = finalValue;
+                    }
+                }
+
+
+            // Charts
+     function buildChart(managementValue, equityValue){
+            const totalValue = managementValue + equityValue;
+            const fee_perc = Math.round(managementValue/totalValue*100);
+            const equity_perc = Math.round(equityValue/totalValue*100);
+            var myChart = echarts.init(document.getElementById('main'));
+            window.onresize = function() {
+                myChart.resize();
+            };
+
+                const gaugeData = [
+                  {
+                    value: fee_perc,
+                    name: 'Management Fee Valuation',
+                    title: {
+                      offsetCenter: ['0%', '-30%']
+                    },
+                    detail: {
+                      valueAnimation: true,
+                      offsetCenter: ['0%', '-20%']
+                    }
+                  },
+                  {
+                    value: equity_perc,
+                    name: 'Equity Valuation',
+                    title: {
+                      offsetCenter: ['0%', '0%']
+                    },
+                    detail: {
+                      valueAnimation: true,
+                      offsetCenter: ['0%', '10%']
+                    }
+                  },
+                  {
+                    value: 100,
+                    name: 'Valuation Total',
+                    title: {
+                      offsetCenter: ['0%', '30%']
+                    },
+                    detail: {
+                      valueAnimation: true,
+                      offsetCenter: ['0%', '40%']
+                    }
+                  }
+                ];
+                const option = {
+                      color: [
+                            '#00E396',
+                            '#03A9F4',
+                            '#546E7A',
+                            // '#91c7ae',
+
+                          ],
+                      // title: {
+                      //   text: 'Valuation Contribution Breakdown',
+                      //   left: 'center',
+                      //   top: 20,
+                      //   textStyle: {
+                      //     color: 'black'
+                      //   }
+                      // },
+                      tooltip: {
+                        trigger: 'item'
+                      },
+                  series: [
+                    {
+                      type: 'gauge',
+                      startAngle: 90,
+                      endAngle: -270,
+                      pointer: {
+                        show: false
+                      },
+                      progress: {
+                        show: true,
+                        overlap: false,
+                        roundCap: true,
+                        clip: false,
+                        itemStyle: {
+                          borderWidth: 0
+                        }
+                      },
+                      axisLine: {
+                        lineStyle: {
+                          width: 40
+                        }
+                      },
+                      splitLine: {
+                        show: false,
+                        distance: 0,
+                        length: 10
+                      },
+                      axisTick: {
+                        show: false
+                      },
+                      axisLabel: {
+                        show: false,
+                        distance: 50
+                      },
+                      data: gaugeData,
+                      title: {
+                        fontSize: 10,
+                        paddingBottom: 5
+                      },
+                      detail: {
+                        width: 45,
+                        height: 14,
+                        fontSize: 10,
+                        padding: 1,
+                        marginTop: 5,
+                        color: 'auto',
+                        borderColor: 'auto',
+                        borderRadius: 10,
+                        borderWidth: 1,
+                        formatter: '{value}%'
+                      }
+                    }
+                  ]
+                };
+            myChart.setOption(option);
+            }
+
+            // Chart 2
+            function buildCapexChart(data) {
+                var myChart2 = echarts.init(document.getElementById('main2'));
+                const option2 = {
+                    legend: {
+                        // Try 'horizontal'
+                        orient: 'verical',
+                        right: 0,
+                        textStyle: {fontStyle: 5},
+                        itemWidth: 10,
+                        // bottom: -15
+                        // top: 'right',
+                    },
+                    title: {
+                        text: 'Capex Breakdown'
+                    },
+                    color: [
+                        '#03A9F4',
+                        '#00E396',
+                        '#546E7A',
+                    ],
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            // Use axis to trigger tooltip
+                            type: 'shadow' // 'shadow' as default; can also be 'line' or 'shadow'
+                        }
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    yAxis: {
+                        splitLine: {
+                            show: false
+                        },
+                        type: 'value',
+                        axisLabel: {
+                            formatter: 'R{value}',
+                            align: 'center',
+                            fontStyle: {fontSize: 5},
+                            // ...
+                        }
+                    },
+                    xAxis: {
+                        splitLine: {
+                            show: false
+                        },
+                        type: 'category',
+                        data: ['']
+                    },
+                    series: [
+                        {
+                            name: 'Capital Invested',
+                            type: 'bar',
+                            stack: 'total',
+                            label: {
+                                show: false, formatter: 'R{c*10}',
+                            },
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: [Math.round(data['invested'])]
+                        },
+                        {
+                            name: 'Opex',
+                            type: 'bar',
+                            stack: 'total',
+                            label: {
+                                show: false, formatter: 'R{c}',
+                            },
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: [Math.round(data['opex'])]
+                        },
+                        {
+                            name: 'Variable Deal Expenses',
+                            type: 'bar',
+                            stack: 'total',
+                            label: {
+                                show: false, formatter: 'R{c}',
+                            },
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: [Math.round(data['varex'])]
+                        },
+                    ]
+                };
+                myChart2.setOption(option2);
+            }
+
+        })
+      ;
+      </script>
+
+<style>
+    html {
+	 width: 100%;
+	 height: 100%;
+}
+ body {
+	 background-color: #e6e9ed;
+	 width: 100%;
+	 height: 100%;
+}
+ main {
+	 width: 100%;
+	 height: 150px;
+	 display: grid;
+	 /*align-items: center;*/
+}
+ .field_slider {
+	 background-color: #fff;
+	 width: 100%;
+	 /*max-width: 340px;*/
+	 padding: 20px;
+	 margin-left: auto;
+	 margin-right: auto;
+	 box-shadow: 0px 10px 20px 0px rgba(0, 0, 0, 0.19), 0px 6px 6px 0px rgba(0, 0, 0, 0.23);
+}
+ .field_slider label {
+	 margin-bottom: 16px;
+	 display: block;
+	 font-weight: bold;
+	 font-size: 16px;
+}
+ .inputslider {
+	 position: relative;
+}
+ .inputslider input {
+	 display: none;
+}
+ .inputslider .values {
+	 position: relative;
+	 margin-left: 14px;
+	 margin-right: 14px;
+	 height: 30px;
+	 margin-bottom: 8px;
+	 z-index: 1;
+}
+ .inputslider .values span {
+	 position: absolute;
+	 top: 0;
+	 background-color: #e6e9ed;
+	 color: #434a54;
+	 line-height: 20px;
+	 padding: 0 10px;
+	 border-radius: 10px;
+	 text-align: center;
+	 white-space: nowrap;
+	 display: block;
+	 font-size: 12px;
+	 transform: translateX(-50%);
+	 z-index: 1;
+	 transition: all 0.2s ease;
+}
+ .inputslider .values span.selected {
+	 background-color: #434a54;
+	 color: #fff;
+	 z-index: 2;
+}
+ .inputslider .area {
+	 position: relative;
+	 height: 28px;
+}
+ .inputslider .area .track {
+	 position: absolute;
+	 top: 50%;
+	 left: 0;
+	 background-color: #e6e9ed;
+	 width: 100%;
+	 height: 6px;
+	 border-radius: 3px;
+	 z-index: 1;
+	 transform: translateY(-50%);
+}
+ .inputslider .area .fill {
+	 position: absolute;
+	 top: 50%;
+	 left: 0;
+	 background: #aab2bd;
+	 width: 0;
+	 height: 6px;
+	 border-radius: 3px;
+	 z-index: 2;
+	 transform: translateY(-50%);
+}
+ .inputslider .area .knob {
+	 position: absolute;
+	 top: 0;
+	 left: 0;
+	 background-color: #434a54;
+	 width: 28px;
+	 height: 28px;
+	 border-radius: 50%;
+	 box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.1), 0px 7px 12px rgba(0, 0, 0, 0.12);
+	 z-index: 3;
+}
+
+ /*KPI Testing*/
+@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600);
+
+:root {
+    --bar1-width: 50%;
+    --bar2-width: 50%;
+    --bar3-width: 50%;
+}
+
+ body .ui {
+	 /*width: 900px;*/
+     margin-top: 20px;
+     font-family: &#39;
+	Source Sans Pro&#39;
+	, sans-serif;
+	 color: #393636;
+	 box-shadow: none;
+}
+ body .ui ul {
+	 margin: 0px 30px 10px 0px;
+	 padding: 0;
+	 list-style-type: none;
+	 font-size: 11px;
+	 font-weight: 400;
+	 line-height: 20px;
+}
+
+
+ body .ui_box {
+	 width: 33.3%;
+	 height: 220px;
+	 position: relative;
+	 background: white; /*#3d3d3d;*/
+	 float: left;
+	 box-shadow: -1px 0px rgba(255, 255, 255, 0.07);
+	 cursor: pointer;
+     border-right: 1px solid lightgray;
+	 transform: scale(1);
+	 transition-property: transform, background;
+	 transition-duration: 0.3s;
+}
+body .ui_box--2 {
+	 width: 100%;
+	 height: 130px;
+	 position: relative;
+	 background: white; /*#3d3d3d;*/
+	 float: left;
+	 box-shadow: -1px 0px rgba(255, 255, 255, 0.07);
+	 cursor: pointer;
+     /*border-right: 1px solid lightgray;*/
+	 transform: scale(1);
+	 transition-property: transform, background;
+	 transition-duration: 0.3s;
+}
+
+ body .ui_box--3 {
+	 width: 25%;
+	 height: 150px;
+	 position: relative;
+	 background: white; /*#3d3d3d;*/
+	 float: left;
+	 box-shadow: -1px 0px rgba(255, 255, 255, 0.07);
+	 cursor: pointer;
+     border-right: 1px solid lightgray;
+	 transform: scale(1);
+	 transition-property: transform, background;
+	 transition-duration: 0.3s;
+}
+
+ body .ui_box__inner, body .ui_box__inner--3  {
+	 padding: 30px;
+}
+ body .ui_box__inner span,  body .ui_box__inner--3 span {
+	 font-size: 36px;
+	 font-weight: 700;
+     /*color: #3e8368;*/
+}
+
+ body .ui_box__inner--3 span {
+	 font-size: 36px;
+     /*color: #bb7171;*/
+	 font-weight: 700;
+     /*color: #3e8368;*/
+}
+
+ body .ui_box__inner .progress {
+	 width: 100%;
+	 margin-top: 10px;
+	 height: 6px;
+	 background: rgba(0, 0, 0, 0.3);
+	 margin-bottom: 15px;
+}
+/* body .ui_box__inner .progress_graph {*/
+/*	 float: right;*/
+/*	 border-bottom: 1px solid rgba(255, 255, 255, 0.09);*/
+/*	 width: 85px;*/
+/*	 text-align: center;*/
+/*	 position: relative;*/
+/*	 padding-left: 20px;*/
+/*	 top: 24px;*/
+/*}*/
+/* body .ui_box__inner .progress_graph__bar--1 {*/
+/*	 width: 10px;*/
+/*	 height: 20px;*/
+/*	 background: #4fa584;*/
+/*	 float: left;*/
+/*	 margin-right: 10px;*/
+/*	 position: relative;*/
+/*	 bottom: -10px;*/
+/*	 -webkit-animation: graph 1s;*/
+/*}*/
+/* body .ui_box__inner .progress_graph__bar--2 {*/
+/*	 width: 10px;*/
+/*	 -webkit-animation: graph2 1s;*/
+/*	 height: 30px;*/
+/*	 float: left;*/
+/*	 margin-right: 10px;*/
+/*	 background: #4fa584;*/
+/*}*/
+/* body .ui_box__inner .progress_graph__bar--3 {*/
+/*	 width: 10px;*/
+/*	 height: 24px;*/
+/*	 margin-right: 10px;*/
+/*	 -webkit-animation: graph3 1s;*/
+/*	 background: #4fa584;*/
+/*	 float: left;*/
+/*	 position: relative;*/
+/*	 bottom: -6px;*/
+/*}*/
+/* body .ui_box__inner .progress_graph__bar--4 {*/
+/*	 width: 10px;*/
+/*	 height: 14px;*/
+/*	 -webkit-animation: graph4 1s;*/
+/*	 bottom: -16px;*/
+/*	 position: relative;*/
+/*	 background: #4fa584;*/
+/*	 float: left;*/
+/*}*/
+ body .ui_box__inner .progress_bar {
+	 height: 6px;
+	 float: left;
+	 width: var(--bar1-width);
+	 background: #4fa584;
+	 -webkit-animation: bar 2s;
+}
+ body .ui_box__inner .progress_bar--two {
+	 height: 6px;
+	 float: left;
+	 width: var(--bar2-width);
+	 background: #4fa584;
+	 -webkit-animation: bar2 2s;
+}
+
+  body .ui_box__inner .progress_bar--three {
+	 height: 6px;
+	 float: left;
+	 width: var(--bar3-width);
+	 background: #4fa584;
+	 -webkit-animation: bar3 2s;
+}
+ body .ui_box h2, body .ui_box--2 h2, body .ui_box--3 h2{
+	 font-weight: normal;
+	 font-size: 16px;
+	 margin: -4px 0px 3px 0px;
+}
+
+
+ body .ui_box p, body .ui_box--2 p, body .ui_box--3 p {
+	 font-size: 11px;
+	 color: gray; /*#b6b6b6;*/
+	 clear: left;
+	 font-weight: 300;
+	 width: 250px;
+	 margin: 2px 0px 15px 0px;
+}
+
+/* body .ui_box:hover {*/
+/*	 background: #4fa584;*/
+/*	 transform: scale(1.1);*/
+/*	 transition-property: transform, background;*/
+/*	 transition-duration: 0.3s;*/
+/*	 position: relative;*/
+/*	 z-index: 1;*/
+/*}*/
+/* .ui_box:hover &gt;*/
+/* .ui_box__inner p {*/
+/*	 color: #b3dacb;*/
+/*}*/
+/* .ui_box:hover &gt;*/
+/* .drop {*/
+/*	 transition-property: bottom, opacity;*/
+/*	 transition-duration: 0.3s;*/
+/*	 bottom: -42px;*/
+/*	 opacity: 1;*/
+/*}*/
+/* .ui_box:hover &gt;*/
+/* .drop .arrow {*/
+/*	 transition-property: transform;*/
+/*	 transition-duration: 1s;*/
+/*	 transform: rotate(765deg);*/
+/*}*/
+/* .ui_box:hover &gt;*/
+/* .ui_box__inner .progress_graph &gt;*/
+/* div {*/
+/*	 background: white;*/
+/*}*/
+/* .ui_box:hover &gt;*/
+/* .ui_box__inner .progress .progress_bar, .ui_box:hover &gt;*/
+/* .ui_box__inner .progress .progress_bar--two {*/
+/*	 background: white;*/
+/*}*/
+ .stat_left {
+	 float: left;
+}
+ .arrow {
+	 width: 4px;
+	 height: 4px;
+	 transition-property: transform;
+	 transition-duration: 1s;
+	 transform: rotate(45deg);
+	 -webkit-transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+	 border-top: 1px solid #cdead3;
+	 border-right: 1px solid #cdead3;
+	 float: right;
+	 position: relative;
+	 top: -24px;
+	 right: 0px;
+}
+ @keyframes bar {
+	 from {
+		 width: 0px;
+	}
+	 to {
+		 width: var(--bar1-width);
+	}
+}
+ @keyframes bar2 {
+	 from {
+		 width: 0px;
+	}
+	 to {
+		 width: var(--bar2-width);
+	}
+}
+
+  @keyframes bar3 {
+	 from {
+		 width: 0px;
+	}
+	 to {
+		 width: var(--bar3-width);
+	}
+}
+</style>
+
+</body>
+
+</html>
+
