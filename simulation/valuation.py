@@ -105,14 +105,15 @@ class Valuation:
     def cagr(self):
         if self._total_valuation == 0 or self._net_valuation == 0:
             return "No `net valuation` value has been calculated yet."
-        self._cagr = pow((self._net_valuation / self._total_invested), (1 / self.valuation_period)) - 1
+        self._cagr = pow((self._total_valuation / self._total_invested), (1 / self.valuation_period)) - 1
         return self._cagr
 
     @property
     def coc(self):
         if self._total_valuation == 0 or self._net_valuation == 0:
             return "No net valuation value has been calculated yet."
-        self._coc = int(round(self._net_valuation / (self._total_invested - self.opex - self.varex), 0))
+        # self._coc = int(round(self._net_valuation / (self._total_invested - self.opex - self.varex), 0))
+        self._coc = int(round(self._total_valuation / self._total_invested, 0))
         return self._coc
 
     @property
